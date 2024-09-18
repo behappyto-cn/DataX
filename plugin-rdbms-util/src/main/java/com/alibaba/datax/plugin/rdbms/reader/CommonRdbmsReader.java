@@ -121,6 +121,7 @@ public class CommonRdbmsReader {
         private String password;
         private String jdbcUrl;
         private String mandatoryEncoding;
+        private String blodBase64;
 
         // 作为日志显示信息时，需要附带的通用信息。比如信息所对应的数据库连接等信息，针对哪个表做的操作
         private String basicMsg;
@@ -158,6 +159,7 @@ public class CommonRdbmsReader {
             }
 
             this.mandatoryEncoding = readerSliceConfig.getString(Key.MANDATORY_ENCODING, "");
+            this.blodBase64 = readerSliceConfig.getString(Key.BLOD_BASE64, "true");
 
             basicMsg = String.format("jdbcUrl:[%s]", this.jdbcUrl);
 
@@ -301,7 +303,11 @@ public class CommonRdbmsReader {
                         case Types.VARBINARY:
                         case Types.BLOB:
                         case Types.LONGVARBINARY:
-                            record.addColumn(new StringColumn(Base64.byteArrayToBase64(rs.getBytes(i))));
+                            if (StringUtils.equalsIgnoreCase(this.blodBase64, "true")) {
+                                record.addColumn(new StringColumn(Base64.byteArrayToBase64(rs.getBytes(i))));
+                            } else {
+                                record.addColumn(new BytesColumn(rs.getBytes(i)));
+                            }
                             break;
 
                         // warn: bit(1) -> Types.BIT 可使用BoolColumn
