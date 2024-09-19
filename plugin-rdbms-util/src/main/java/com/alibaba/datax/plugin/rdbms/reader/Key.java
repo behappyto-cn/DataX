@@ -57,4 +57,6 @@ public final class Key {
     public final static String PARTITION_NAME = "partitionName";
 
     public final static String BLOD_BASE64 = "blodBase64";
+
+    public final static String VARCHAR_NSTRING = "varcharNString";
 }

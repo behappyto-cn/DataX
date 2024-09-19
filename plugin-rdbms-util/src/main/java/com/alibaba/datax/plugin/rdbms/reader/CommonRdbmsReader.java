@@ -121,6 +121,7 @@ public class CommonRdbmsReader {
         private String password;
         private String jdbcUrl;
         private String mandatoryEncoding;
+        private String varcharNString;
         private String blodBase64;
 
         // 作为日志显示信息时，需要附带的通用信息。比如信息所对应的数据库连接等信息，针对哪个表做的操作
@@ -160,6 +161,7 @@ public class CommonRdbmsReader {
 
             this.mandatoryEncoding = readerSliceConfig.getString(Key.MANDATORY_ENCODING, "");
             this.blodBase64 = readerSliceConfig.getString(Key.BLOD_BASE64, "true");
+            this.varcharNString = readerSliceConfig.getString(Key.VARCHAR_NSTRING, "");
 
             basicMsg = String.format("jdbcUrl:[%s]", this.jdbcUrl);
 
@@ -250,11 +252,15 @@ public class CommonRdbmsReader {
                         case Types.NVARCHAR:
                         case Types.LONGNVARCHAR:
                             String rawData;
-                            if (StringUtils.isBlank(mandatoryEncoding)) {
+                            if (StringUtils.isBlank(this.varcharNString)) {
                                 rawData = rs.getString(i);
                             } else {
-                                rawData = new String((rs.getBytes(i) == null ? EMPTY_CHAR_ARRAY :
-                                        rs.getBytes(i)), mandatoryEncoding);
+                                if (StringUtils.isBlank(mandatoryEncoding)) {
+                                    rawData = rs.getNString(i);
+                                } else {
+                                    rawData = new String((rs.getBytes(i) == null ? EMPTY_CHAR_ARRAY :
+                                            rs.getBytes(i)), mandatoryEncoding);
+                                }
                             }
                             record.addColumn(new StringColumn(rawData));
                             break;
